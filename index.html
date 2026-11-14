@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Keuangan</title>
+  <meta name="theme-color" content="#f3eef8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#160f1e" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Keuangan">
+  <link rel="preload" href="fonts/inter-latin-wght.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="glass.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <!-- Icon sprite: hand-drawn 24px line icons, stroke styled by .ic -->
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5.5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="18.5" cy="12" r="1.7"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="M14.5 5.5 8 12l6.5 6.5"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9.5 5.5 16 12l-6.5 6.5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 5v14M6.5 13.5 12 19l5.5-5.5"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></symbol>
+    <symbol id="i-export" viewBox="0 0 24 24"><path d="M12 14.5V3.5M8 7.5l4-4 4 4M8.5 10H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1.5"/></symbol>
+    <symbol id="i-import" viewBox="0 0 24 24"><path d="M12 3.5v11M8 10.5l4 4 4-4M8.5 10H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-1.5"/></symbol>
+  </svg>
+
+  <header class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <span class="nav-title" aria-hidden="true">Keuangan</span>
+      <button type="button" id="menu-btn" class="icon-btn glass" aria-label="Menu" aria-haspopup="dialog">
+        <svg class="ic" aria-hidden="true"><use href="#i-more"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <h1 class="large-title">Keuangan</h1>
+
+    <nav class="month-nav glass" aria-label="Pilih bulan">
+      <button type="button" id="prev" class="month-btn" aria-label="Bulan sebelumnya">
+        <svg class="ic" aria-hidden="true"><use href="#i-left"/></svg>
+      </button>
+      <h2 id="month-label" aria-live="polite"></h2>
+      <button type="button" id="next" class="month-btn" aria-label="Bulan berikutnya">
+        <svg class="ic" aria-hidden="true"><use href="#i-right"/></svg>
+      </button>
+    </nav>
+
+    <section class="hero" aria-label="Ringkasan bulan ini">
+      <p class="hero-label">Saldo bulan ini</p>
+      <p id="sum-bal" class="hero-balance"></p>
+      <div class="hero-split">
+        <div class="hero-item">
+          <span class="badge" aria-hidden="true"><svg class="ic"><use href="#i-down"/></svg></span>
+          <div><small>Pemasukan</small><strong id="sum-in"></strong></div>
+        </div>
+        <div class="hero-item">
+          <span class="badge" aria-hidden="true"><svg class="ic"><use href="#i-up"/></svg></span>
+          <div><small>Pengeluaran</small><strong id="sum-out"></strong></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="seg tabs glass" id="tabs" role="tablist" aria-label="Tampilan" data-sel="0">
+      <button type="button" role="tab" id="tab-tx" aria-selected="true" aria-controls="panel-tx">Transaksi</button>
+      <button type="button" role="tab" id="tab-cat" aria-selected="false" aria-controls="panel-cat" tabindex="-1">Kategori</button>
+    </div>
+
+    <section id="panel-tx" role="tabpanel" aria-labelledby="tab-tx">
+      <div id="list"></div>
+      <div id="empty" class="empty" hidden>
+        <span class="empty-art glass" aria-hidden="true">🌱</span>
+        <p class="empty-title">Belum ada transaksi bulan ini</p>
+        <p class="muted">Ketuk + untuk mencatat</p>
+      </div>
+    </section>
+
+    <section id="panel-cat" role="tabpanel" aria-labelledby="tab-cat" hidden>
+      <ul id="cats" class="cats"></ul>
+      <div id="cats-empty" class="empty" hidden>
+        <span class="empty-art glass" aria-hidden="true">📊</span>
+        <p class="empty-title">Belum ada pengeluaran bulan ini</p>
+      </div>
+    </section>
+  </main>
+
+  <button type="button" id="fab" class="fab" aria-label="Tambah transaksi" aria-haspopup="dialog">
+    <svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg>
+  </button>
+
+  <dialog id="add-sheet" class="sheet" aria-labelledby="add-title">
+    <form id="form" class="sheet-body" novalidate data-type="out">
+      <span class="handle" aria-hidden="true"></span>
+      <div class="sheet-head">
+        <button type="button" id="add-cancel" class="text-btn">Batal</button>
+        <h2 id="add-title" class="sheet-title">Transaksi Baru</h2>
+        <button type="submit" class="text-btn strong">Simpan</button>
+      </div>
+      <fieldset class="seg type-seg glass">
+        <legend class="sr-only">Jenis</legend>
+        <label><input type="radio" name="type" value="out" checked><span>Pengeluaran</span></label>
+        <label><input type="radio" name="type" value="in"><span>Pemasukan</span></label>
+      </fieldset>
+      <label class="amount-field">
+        <span class="sr-only">Jumlah</span>
+        <span class="rp" aria-hidden="true">Rp</span>
+        <input id="amount" name="amount" inputmode="numeric" autocomplete="off" placeholder="0" required autofocus>
+      </label>
+      <fieldset class="chips">
+        <legend class="sr-only">Kategori</legend>
+        <div id="chips" class="chip-grid"></div>
+      </fieldset>
+      <div class="group glass">
+        <label class="form-row"><span>Catatan</span>
+          <input id="note" name="note" maxlength="120" autocomplete="off" placeholder="Opsional">
+        </label>
+        <label class="form-row"><span>Tanggal</span>
+          <input id="date" name="date" type="date" required>
+        </label>
+      </div>
+      <p id="form-error" class="error" aria-live="assertive"></p>
+    </form>
+  </dialog>
+
+  <dialog id="detail-sheet" class="sheet" aria-labelledby="detail-title">
+    <div class="sheet-body">
+      <span class="handle" aria-hidden="true"></span>
+      <div class="sheet-head">
+        <span aria-hidden="true"></span>
+        <h2 id="detail-title" class="sheet-title">Detail Transaksi</h2>
+        <button type="button" id="detail-close" class="text-btn strong">Tutup</button>
+      </div>
+      <div class="detail-head">
+        <span id="detail-icon" class="cat-icon big" aria-hidden="true"></span>
+        <p id="detail-amount" class="detail-amount"></p>
+      </div>
+      <dl class="group glass detail-list">
+        <div><dt>Jenis</dt><dd id="detail-type"></dd></div>
+        <div><dt>Kategori</dt><dd id="detail-cat"></dd></div>
+        <div><dt>Catatan</dt><dd id="detail-note"></dd></div>
+        <div><dt>Tanggal</dt><dd id="detail-date"></dd></div>
+      </dl>
+      <div class="group glass">
+        <button type="button" id="delete" class="group-btn danger">Hapus Transaksi</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="menu-sheet" class="sheet action-sheet" aria-labelledby="menu-title">
+    <div class="sheet-body">
+      <div class="group glass">
+        <h2 id="menu-title" class="action-title">Cadangan data</h2>
+        <p class="footnote">Data hanya tersimpan di perangkat ini. Ekspor cadangan secara rutin agar data tidak hilang.</p>
+        <button type="button" id="export" class="menu-item">
+          <svg class="ic" aria-hidden="true"><use href="#i-export"/></svg>Ekspor cadangan
+        </button>
+        <label class="menu-item" for="import">
+          <svg class="ic" aria-hidden="true"><use href="#i-import"/></svg>Impor cadangan
+        </label>
+        <input type="file" id="import" accept="application/json,.json" class="sr-only">
+      </div>
+      <div class="group glass">
+        <button type="button" id="menu-cancel" class="group-btn strong">Batal</button>
+      </div>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast glass" role="status" aria-live="polite" popover="manual" hidden></div>
+</body>
+</html>

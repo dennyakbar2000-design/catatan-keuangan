@@ -1,0 +1,130 @@
+/* Liquid Glass material, segmented controls, FAB, toast and motion. */
+:root {
+  --glass: rgb(255 255 255 / 0.55);
+  --glass-thick: rgb(250 247 253 / 0.78);
+  --glass-solid: rgb(255 255 255 / 0.9);
+  --glass-border: rgb(255 255 255 / 0.6);
+  --glass-hi: inset 0 1px 0 rgb(255 255 255 / 0.7);
+  --glass-shadow: 0 1px 2px rgb(40 10 70 / 0.05), 0 8px 24px rgb(60 20 100 / 0.1);
+  --glass-blur: blur(24px) saturate(180%);
+  --thumb: #ffffff;
+  --thumb-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 1px 1px rgb(0 0 0 / 0.06);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --glass: rgb(28 20 38 / 0.5);
+    --glass-thick: rgb(34 24 46 / 0.8);
+    --glass-solid: rgb(30 21 40 / 0.94);
+    --glass-border: rgb(255 255 255 / 0.12);
+    --glass-hi: inset 0 1px 0 rgb(255 255 255 / 0.1);
+    --glass-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px rgb(0 0 0 / 0.3);
+    --thumb: rgb(255 255 255 / 0.2);
+    --thumb-shadow: 0 3px 8px rgb(0 0 0 / 0.3);
+  }
+}
+
+.glass, .chip-face, .scrolled .navbar, .sheet:not(#add-sheet):not(.action-sheet) {
+  background: var(--glass);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-hi), var(--glass-shadow);
+}
+/* Over the dimmed backdrop, sheets need a thicker material to stay readable. */
+.sheet:not(#add-sheet):not(.action-sheet), .action-sheet .group { background: var(--glass-thick); }
+.sheet { border-bottom: 0; }
+.action-sheet { background: transparent; overflow: visible; }
+.action-sheet .sheet-body { gap: 8px; padding: 0 8px calc(8px + env(safe-area-inset-bottom)); }
+#add-sheet { border: 1px solid var(--glass-border); border-bottom: 0; box-shadow: var(--glass-hi); }
+
+.scrolled .navbar {
+  border-width: 0 0 0.5px; border-color: var(--sep);
+  box-shadow: var(--glass-shadow);
+  background: var(--glass-thick); /* bar sits over the purple hero; thicker keeps the title legible */
+}
+.navbar { background: transparent; }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass, .chip-face, .scrolled .navbar, .sheet:not(#add-sheet), .action-sheet .group { background: var(--glass-solid); }
+}
+
+/* Segmented control: glass track with a raised thumb that slides */
+.seg {
+  position: relative; display: grid; grid-template-columns: 1fr 1fr;
+  height: 34px; padding: 2px; margin: 0; border-radius: 10px; min-width: 0;
+}
+.seg::before {
+  content: ""; position: absolute; top: 2px; bottom: 2px; left: 2px; width: calc(50% - 2px);
+  border-radius: 8px; background: var(--thumb); box-shadow: var(--thumb-shadow);
+  transition: transform 0.45s var(--ease-ios);
+}
+.tabs[data-sel="1"]::before, form[data-type=in] .type-seg::before { transform: translateX(100%); }
+.tabs { margin-top: var(--s3); }
+.seg button, .seg span {
+  position: relative; z-index: 1; display: block; height: 100%; width: 100%;
+  border: 0; border-radius: 8px; padding: 0 6px; background: transparent;
+  font-size: 14px; font-weight: 500; line-height: 28px; text-align: center; color: var(--text);
+  transition: color 0.2s;
+}
+.seg [aria-selected="true"] { font-weight: 600; }
+/* Enlarge the hit area to 44px without growing the 34px control */
+.seg button::after, .seg label::after { content: ""; position: absolute; inset: -6px 0; }
+.seg label { position: relative; cursor: pointer; display: block; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.seg input:focus-visible + span { outline: 3px solid var(--focus); outline-offset: 1px; }
+.type-seg input:checked + span { font-weight: 600; }
+.type-seg input[value=out]:checked + span { color: var(--out); }
+.type-seg input[value=in]:checked + span { color: var(--in); }
+
+/* FAB: purple tinted Liquid Glass */
+.fab {
+  position: fixed; z-index: 5;
+  right: max(var(--s3), env(safe-area-inset-right), calc(50% - 240px + var(--s2)));
+  bottom: calc(var(--s3) + env(safe-area-inset-bottom));
+  width: 60px; height: 60px; border-radius: 50%; padding: 0;
+  display: grid; place-items: center; overflow: hidden; color: #fff;
+  background: linear-gradient(160deg, rgb(168 85 247 / 0.82), rgb(107 33 168 / 0.88));
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid rgb(255 255 255 / 0.4);
+  box-shadow: inset 0 1px 1px rgb(255 255 255 / 0.65), inset 0 -3px 8px rgb(59 7 100 / 0.35),
+    0 10px 28px rgb(126 34 206 / 0.45);
+}
+.fab::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(60% 45% at 32% 18%, rgb(255 255 255 / 0.55), transparent 70%);
+}
+.fab .ic { width: 28px; height: 28px; stroke-width: 2.4; position: relative; }
+
+/* Toast: notification-style glass capsule dropping from the top (a manual popover, so it shows above sheets) */
+.toast {
+  position: fixed; inset: calc(env(safe-area-inset-top) + 10px) auto auto 50%;
+  transform: translateX(-50%); margin: 0;
+  max-width: min(440px, calc(100vw - 32px)); width: max-content;
+  padding: 12px 20px; border-radius: 999px;
+  color: var(--text); font-size: 15px; font-weight: 600; text-align: center;
+  animation: toast-in 0.5s var(--ease-ios);
+}
+.toast.error { background: rgb(200 40 30 / 0.85); color: #fff; border-radius: 20px; }
+.toast[hidden] { display: none; }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, -140%); } }
+
+/* Motion */
+.sheet[open] { animation: sheet-up 0.45s var(--ease-ios); }
+.sheet::backdrop { animation: fade 0.3s ease-out; }
+@keyframes sheet-up { from { transform: translateY(100%); } }
+@keyframes fade { from { opacity: 0; } }
+
+.icon-btn, .month-btn, .text-btn, .fab, .chip-face, .tx, .group-btn, .menu-item, .seg button, .seg span {
+  transition: transform 0.25s var(--ease-ios), background-color 0.2s, color 0.2s, box-shadow 0.2s;
+}
+.icon-btn:active, .month-btn:active, .text-btn:active, .fab:active, .tx:active,
+.group-btn:active, .menu-item:active, .chip:active .chip-face { transform: scale(0.97); }
+.text-btn:active { opacity: 0.6; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .sheet::backdrop { animation: none; }
+  .icon-btn:active, .month-btn:active, .text-btn:active, .fab:active, .tx:active,
+  .group-btn:active, .menu-item:active, .chip:active .chip-face, .chip input:checked + .chip-face { transform: none; }
+}
